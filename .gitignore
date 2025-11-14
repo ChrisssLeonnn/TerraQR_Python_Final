@@ -1,0 +1,33 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+venv/
+.venv/
+env/
+.env/
+
+# IDEs
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+
+# Logs and temporary files
+*.log
+tmp/
+data/
+
+# Build artifacts
+dist/
+build/
+*.egg-info/
+
+# MyPy
+.mypy_cache/
+
+# Ruff
+.ruff_cache/
