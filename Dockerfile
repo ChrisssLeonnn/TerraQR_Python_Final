@@ -1,6 +1,9 @@
 # Usa una imagen base de Python
 FROM python:3.11-slim-bullseye
 
+# Configura DEBIAN_FRONTEND para instalaciones no interactivas
+ENV DEBIAN_FRONTEND=noninteractive
+
 # Instala dependencias del sistema para aioodbc y SQL Server ODBC Driver
 # Basado en la documentación de Microsoft para Debian/Ubuntu
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -16,7 +19,8 @@ RUN curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add -
 RUN curl https://packages.microsoft.com/config/debian/11/prod.list > /etc/apt/sources.list.d/mssql-release.list
 
 # Actualiza e instala el driver ODBC 18 para SQL Server
-RUN apt-get update && apt-get install -y --no-install-recommends \
+# Auto-acepta la licencia de msodbcsql18
+RUN ACCEPT_EULA=Y apt-get update && apt-get install -y --no-install-recommends \
     msodbcsql18 \
     # mssql-tools18 # Opcional: si necesitas herramientas como sqlcmd
     && rm -rf /var/lib/apt/lists/*
