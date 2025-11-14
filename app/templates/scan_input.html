@@ -1,0 +1,38 @@
+{% extends "_base.html" %}
+
+{% block title %}Escanear QR - TerraQR{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <h2>Escanear QR</h2>
+    {% if error %}
+        <div class="message error-message">{{ error }}</div>
+    {% elif message %}
+        <div class="message success-message">{{ message }}</div>
+    {% endif %}
+    <form id="scanForm" method="get"> <!-- Removed action, will be handled by JS -->
+        <div class="form-group">
+            <label for="qr_token_input">Ingresar QR Token</label>
+            <input type="text" id="qr_token_input" name="qr_token_input" class="form-control form-control-lg" placeholder="UUID del QR" required>
+        </div>
+        <div class="d-grid">
+            <button type="submit" class="btn btn-primary btn-lg">Validar QR</button>
+        </div>
+    </form>
+    <p class="mt-3 text-center text-muted">
+        O escanea un código QR con tu dispositivo móvil.
+    </p>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.getElementById('scanForm').addEventListener('submit', function(event) {
+        event.preventDefault(); // Prevent default form submission
+        const qrToken = document.getElementById('qr_token_input').value;
+        if (qrToken) {
+            window.location.href = '/scan/' + qrToken; // Redirect to the correct URL
+        }
+    });
+</script>
+{% endblock %}

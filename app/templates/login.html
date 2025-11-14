@@ -1,0 +1,23 @@
+{% extends "_base.html" %}
+
+{% block title %}Iniciar Sesión - TerraQR{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <h2>Acceso de Operador</h2>
+    {% if error %}
+        <div class="message error-message">{{ error }}</div>
+    {% endif %}
+    <form method="post">
+        <div class="form-group">
+            <label for="username">Usuario</label>
+            <input type="text" id="username" name="username" required>
+        </div>
+        <div class="form-group">
+            <label for="password">Contraseña</label>
+            <input type="password" id="password" name="password" required>
+        </div>
+        <button type="submit" class="button-primary">Ingresar</button>
+    </form>
+</div>
+{% endblock %}
