@@ -1,17 +1,8 @@
-from fastapi import (
-    APIRouter,
-    Depends,
-    Request,
-    HTTPException,
-    status,
-    Response,
-    Form,
-)
-from fastapi.responses import HTMLResponse, RedirectResponse
-from fastapi.templating import Jinja2Templates
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
-from uuid import UUID
-from typing import Optional
+from sqlalchemy.future import select # Added select
+from uuid import UUID # Added UUID
+from typing import Optional # Added Optional
 
 from app.db import models, schemas
 from app.db.database import get_db
@@ -74,7 +65,7 @@ async def handle_login(
     next_url = request.query_params.get("next", "/scan") # Changed default redirect
     response = RedirectResponse(url=next_url, status_code=status.HTTP_303_SEE_OTHER)
     response.set_cookie(
-        key="access_token", value=access_token, httponly=True, samesite="Lax"
+        key="access_token", value=access_token, httpy_only=True, samesite="Lax"
     )
     return response
 
@@ -138,9 +129,20 @@ async def validate_and_register_qr_page( # Renamed function
     message = "Acceso registrado correctamente."
     error = None
     
+    # Get the number of companions for this persona
+    # This assumes the adult's QR is scanned.
+    # We need to count how many companions are linked to this adult.
+    num_companions = 0
+    if persona.TipoPersona == "Adulto":
+        # Fetch companions linked to this adult
+        companions_result = await db.execute(
+            select(models.Persona).filter(models.Persona.AdultoResponsableId == persona.PersonaId)
+        )
+        num_companions = len(companions_result.scalars().all())
+
     try:
         # Use the fixed EventoKeyActual from the ASP.NET spec
-        await accesos_service.register_asistencia(db, qr_token, "concierto2025")
+        await accesos_service.register_asistencia(db, qr_token, "concierto2025", cantidad_acompanantes=num_companions)
     except ValueError as e:
         validation_status = "already_registered" if "ya tiene registrada" in str(e) else "error"
         error = str(e)
@@ -153,12 +155,16 @@ async def validate_and_register_qr_page( # Renamed function
         persona=schemas.PersonaPublic(
             NombreCompleto=f"{persona.Nombre} {persona.ApellidoPaterno} {persona.ApellidoMaterno}",
             Colonia=persona.Colonia,
+            CodigoPostal=persona.CodigoPostal, # New field
             FechaNacimiento=persona.FechaNacimiento,
             Genero=persona.Genero,
+            TipoPersona=persona.TipoPersona,
+            CantidadAcompanantesRegistrados=num_companions
         ),
         eventos_disponibles=[evento_concierto] if evento_concierto else [],
         mensaje=message,
-        error=error
+        error=error,
+        cantidad_acompanantes_registrados=num_companions
     )
 
     return templates.TemplateResponse(

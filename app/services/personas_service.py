@@ -1,7 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from uuid import UUID, uuid4
-from typing import Optional
+from typing import Optional, List
 
 from app.db import models, schemas
 from app.core.security import hash_curp
@@ -17,19 +17,39 @@ async def get_persona_by_curp_hash(db: AsyncSession, curp_hash: bytes) -> Option
     result = await db.execute(select(models.Persona).filter(models.Persona.CURPHash == curp_hash))
     return result.scalars().first()
 
-async def create_persona(db: AsyncSession, persona_in: schemas.PersonaCreate) -> models.Persona:
+async def get_persona_by_email(db: AsyncSession, email: str) -> Optional[models.Persona]:
+    """Fetches a person by their email address."""
+    result = await db.execute(select(models.Persona).filter(models.Persona.Correo == email))
+    return result.scalars().first()
+
+async def create_persona(db: AsyncSession, persona_in: schemas.PersonaCreate, adulto_responsable_id: Optional[UUID] = None, inherit_contact_info: bool = False) -> models.Persona:
     """
     Creates a new person in the database.
-    - Hashes the CURP.
+    - Hashes the CURP if provided.
     - Generates PersonaId and QRToken.
-    - Saves the new person record.
+    - Links to an adult responsible if provided.
+    - Inherits contact info from adult if inherit_contact_info is True.
     """
-    curp_hash_bytes = hash_curp(persona_in.CURP)
+    curp_hash_bytes = None
+    if persona_in.CURP:
+        curp_hash_bytes = hash_curp(persona_in.CURP)
+        # Check if CURP already exists for adults
+        if persona_in.TipoPersona == "Adulto":
+            existing_persona = await get_persona_by_curp_hash(db, curp_hash_bytes)
+            if existing_persona:
+                raise ValueError("A person with this CURP already exists.")
+
+    # Handle inherited contact info for companions
+    colonia = persona_in.Colonia
+    correo = persona_in.Correo
+    telefono = persona_in.Telefono
     
-    # Check if CURP already exists
-    existing_persona = await get_persona_by_curp_hash(db, curp_hash_bytes)
-    if existing_persona:
-        raise ValueError("A person with this CURP already exists.")
+    if inherit_contact_info and adulto_responsable_id:
+        adulto = await db.get(models.Persona, adulto_responsable_id)
+        if adulto:
+            colonia = adulto.Colonia
+            correo = adulto.Correo
+            telefono = adulto.Telefono
 
     db_persona = models.Persona(
         PersonaId=uuid4(),
@@ -40,9 +60,12 @@ async def create_persona(db: AsyncSession, persona_in: schemas.PersonaCreate) ->
         ApellidoMaterno=persona_in.ApellidoMaterno,
         FechaNacimiento=persona_in.FechaNacimiento,
         Genero=persona_in.Genero,
-        Colonia=persona_in.Colonia,
-        Correo=persona_in.Correo,
-        Telefono=persona_in.Telefono,
+        Colonia=colonia, # Use inherited or provided
+        Correo=correo,   # Use inherited or provided
+        Telefono=telefono, # Use inherited or provided
+        CodigoPostal=persona_in.CodigoPostal, # New field
+        TipoPersona=persona_in.TipoPersona,
+        AdultoResponsableId=adulto_responsable_id
     )
     
     db.add(db_persona)
@@ -51,6 +74,35 @@ async def create_persona(db: AsyncSession, persona_in: schemas.PersonaCreate) ->
     
     return db_persona
 
+async def create_group_registration(db: AsyncSession, group_request: schemas.GroupRegistrationRequest) -> models.Persona:
+    """
+    Registers an adult and their accompanying children/seniors.
+    Returns the registered adult Persona.
+    """
+    # 1. Create the adult persona
+    adulto_persona = await create_persona(db, group_request.adulto)
+
+    # 2. Create accompanying personas and link them to the adult
+    if group_request.acompanantes:
+        for acompanante_data in group_request.acompanantes:
+            # Convert AcompananteCreate to PersonaCreate for reuse
+            persona_create_data = schemas.PersonaCreate(
+                Nombre=acompanante_data.Nombre,
+                ApellidoPaterno=acompanante_data.ApellidoPaterno,
+                ApellidoMaterno=acompanante_data.ApellidoMaterno,
+                FechaNacimiento=acompanante_data.FechaNacimiento,
+                Genero=acompanante_data.Genero,
+                Colonia=acompanante_data.Colonia, # Use provided or default
+                Correo=adulto_persona.Correo,   # Inherit from adult
+                Telefono=adulto_persona.Telefono, # Inherit from adult
+                CodigoPostal=acompanante_data.CodigoPostal, # New field
+                TipoPersona=acompanante_data.TipoPersona,
+                CURP=None # Accompanantes don't have CURP
+            )
+            await create_persona(db, persona_create_data, adulto_responsable_id=adulto_persona.PersonaId, inherit_contact_info=True)
+    
+    return adulto_persona
+
 def generate_qr_url(qr_token: UUID) -> str:
     """Generates the official TerraQR validation URL."""
-    return f"{settings.TERRAQR_BASE_URL}/scan/{str(qr_token)}" # Changed /qr/validate to /scan
+    return f"{settings.TERRAQR_BASE_URL}/scan/{str(qr_token)}"

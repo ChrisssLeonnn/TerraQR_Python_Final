@@ -13,7 +13,7 @@ async def get_existing_asistencia(db: AsyncSession, persona_id: UUID, evento_id:
     )
     return result.scalars().first()
 
-async def register_asistencia(db: AsyncSession, qr_token: UUID, evento_key: str) -> models.Asistencia:
+async def register_asistencia(db: AsyncSession, qr_token: UUID, evento_key: str, cantidad_acompanantes: Optional[int] = None) -> models.Asistencia:
     """
     Registers a person's attendance at an event.
     1. Finds person by QR token.
@@ -38,6 +38,7 @@ async def register_asistencia(db: AsyncSession, qr_token: UUID, evento_key: str)
         AsistenciaId=uuid4(),
         PersonaId=persona.PersonaId,
         EventoId=evento.EventoId,
+        CantidadAcompanantes=cantidad_acompanantes # New field
     )
     db.add(db_asistencia)
 

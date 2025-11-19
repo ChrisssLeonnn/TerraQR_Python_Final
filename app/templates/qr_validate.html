@@ -21,6 +21,9 @@
                 <h1 class="display-4 fw-bold">ACCESO REGISTRADO</h1>
                 <p class="lead">Entrada para</p>
                 <h2 class="display-6">{{ validation_data.persona.NombreCompleto }}</h2>
+                {% if validation_data.persona.TipoPersona == "Adulto" and validation_data.persona.CantidadAcompanantesRegistrados > 0 %}
+                    <p class="lead">Acompañantes registrados: {{ validation_data.persona.CantidadAcompanantesRegistrados }}</p>
+                {% endif %}
                 <p class="lead">{{ validation_data.mensaje }}</p>
             </div>
         {% elif validation_status == "already_registered" %}
@@ -31,6 +34,9 @@
                 <h1 class="display-4 fw-bold">ACCESO YA REGISTRADO</h1>
                 <p class="lead">Este QR ya fue utilizado para ingresar a este evento.</p>
                 <h2 class="display-6">{{ validation_data.persona.NombreCompleto }}</h2>
+                {% if validation_data.persona.TipoPersona == "Adulto" and validation_data.persona.CantidadAcompanantesRegistrados > 0 %}
+                    <p class="lead">Acompañantes registrados: {{ validation_data.persona.CantidadAcompanantesRegistrados }}</p>
+                {% endif %}
             </div>
         {% elif validation_status == "error" %}
             <div class="status-page error">
@@ -42,6 +48,19 @@
                 <h2 class="display-6">{{ validation_data.persona.NombreCompleto }}</h2>
             </div>
         {% endif %}
+        <div class="card mt-4" style="max-width: 500px; margin: 0 auto;">
+            <div class="card-body">
+                <h3 class="card-title">Detalles de la Persona</h3>
+                <p><strong>Nombre:</strong> {{ validation_data.persona.NombreCompleto }}</p>
+                <p><strong>Tipo:</strong> {{ validation_data.persona.TipoPersona }}</p>
+                <p><strong>Colonia:</strong> {{ validation_data.persona.Colonia }}</p>
+                {% if validation_data.persona.CodigoPostal %}
+                    <p><strong>C.P.:</strong> {{ validation_data.persona.CodigoPostal }}</p>
+                {% endif %}
+                <p><strong>Fecha Nacimiento:</strong> {{ validation_data.persona.FechaNacimiento.strftime('%d/%m/%Y') }}</p>
+                <p><strong>Género:</strong> {{ validation_data.persona.Genero }}</p>
+            </div>
+        </div>
     {% endif %}
 </div>
 {% endblock %}
