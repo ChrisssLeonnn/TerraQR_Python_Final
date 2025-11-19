@@ -1,33 +1,21 @@
+# Environments
+.env
+*.env.local
+
 # Python
 __pycache__/
-*.pyc
-*.pyo
-*.pyd
-.Python
+*.py[cod]
+*$py.class
+*.so
+
+# Virtual environment
 venv/
 .venv/
-env/
-.env/
 
-# IDEs
-.vscode/
+# IDE
 .idea/
+.vscode/
 
-# OS
-.DS_Store
-
-# Logs and temporary files
-*.log
-tmp/
-data/
-
-# Build artifacts
-dist/
-build/
-*.egg-info/
-
-# MyPy
-.mypy_cache/
-
-# Ruff
-.ruff_cache/
+# alembic
+alembic.ini
+alembic/

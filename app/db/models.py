@@ -45,7 +45,7 @@ class Operador(Base):
     OperadorId = Column(UNIQUEIDENTIFIER, primary_key=True, default=uuid.uuid4)
     Nombre = Column(String(150), nullable=False)
     Usuario = Column(String(100), unique=True, nullable=False)
-    ContrasenaHash = Column(VARBINARY(32), nullable=False)
+    ContrasenaHash = Column(String(255), nullable=False)
     Activo = Column(Boolean, nullable=False, default=True)
     FechaRegistro = Column(DateTime, nullable=False, default=datetime.utcnow)
 

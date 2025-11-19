@@ -92,10 +92,10 @@ async def create_group_registration(db: AsyncSession, group_request: schemas.Gro
                 ApellidoMaterno=acompanante_data.ApellidoMaterno,
                 FechaNacimiento=acompanante_data.FechaNacimiento,
                 Genero=acompanante_data.Genero,
-                Colonia=acompanante_data.Colonia, # Use provided or default
-                Correo=adulto_persona.Correo,   # Inherit from adult
-                Telefono=adulto_persona.Telefono, # Inherit from adult
-                CodigoPostal=acompanante_data.CodigoPostal, # New field
+                Colonia=group_request.adulto.Colonia, # Inherit from adult
+                Correo=group_request.adulto.Correo,   # Inherit from adult
+                Telefono=group_request.adulto.Telefono, # Inherit from adult
+                CodigoPostal=acompanante_data.CodigoPostal,
                 TipoPersona=acompanante_data.TipoPersona,
                 CURP=None # Accompanantes don't have CURP
             )

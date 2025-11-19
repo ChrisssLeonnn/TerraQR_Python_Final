@@ -4,7 +4,7 @@ from uuid import UUID
 from typing import Optional
 
 from app.db import models
-from app.core.security import get_password_hash
+from app.core.hashing import verify_password
 
 async def get_operador_by_id(db: AsyncSession, operador_id: str) -> Optional[models.Operador]:
     """Fetches an operator by their UUID."""
@@ -30,9 +30,7 @@ async def authenticate_operador(db: AsyncSession, usuario: str, contrasena: str)
     if not operador:
         return None
     
-    # The ContrasenaHash in DB is VARBINARY(32), which is a raw SHA-256 hash.
-    # We compare the hash of the input password with the stored hash.
-    if not get_password_hash(contrasena) == operador.ContrasenaHash:
+    if not verify_password(contrasena, operador.ContrasenaHash):
         return None
         
     if not operador.Activo:

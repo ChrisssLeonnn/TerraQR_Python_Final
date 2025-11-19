@@ -13,17 +13,10 @@ from app.db import models, schemas
 from app.db.database import get_db
 from app.services import operadores_service
 
+from app.core.hashing import get_password_hash, verify_password
+
 # Password Hashing
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
-
-def verify_password(plain_password: str, hashed_password: bytes) -> bool:
-    """Verifies a plain password against a hashed one."""
-    return get_password_hash(plain_password) == hashed_password
-
-def get_password_hash(password: str) -> bytes:
-    """Hashes a password using SHA256, returns the binary hash."""
-    return hashlib.sha256(password.encode('utf-8')).digest()
 
 def hash_curp(curp: str) -> bytes:
     """Hashes a CURP using SHA256 after converting to uppercase."""
