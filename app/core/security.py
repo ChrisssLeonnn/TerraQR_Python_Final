@@ -18,10 +18,6 @@ from app.core.hashing import get_password_hash, verify_password
 # Password Hashing
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
 
-def hash_curp(curp: str) -> bytes:
-    """Hashes a CURP using SHA256 after converting to uppercase."""
-    return hashlib.sha256(curp.upper().encode('utf-8')).digest()
-
 # JWT Token Creation
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
     """Creates a new JWT access token."""

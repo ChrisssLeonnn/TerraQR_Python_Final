@@ -17,7 +17,6 @@ class PersonaBase(BaseModel):
     CodigoPostal: Optional[str] = Field(None, max_length=10) # New field
 
 class PersonaCreate(PersonaBase):
-    CURP: Optional[str] = Field(None, min_length=18, max_length=18) # Made optional
     TipoPersona: str = Field("Adulto", max_length=30) # New field
 
 class Persona(PersonaBase):

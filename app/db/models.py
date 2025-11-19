@@ -21,7 +21,6 @@ class Persona(Base):
 
     PersonaId = Column(UNIQUEIDENTIFIER, primary_key=True, default=uuid.uuid4)
     QRToken = Column(UNIQUEIDENTIFIER, unique=True, nullable=False, default=uuid.uuid4)
-    CURPHash = Column(VARBINARY(32), unique=True, nullable=True) # Made nullable
     Nombre = Column(String(150), nullable=False)
     ApellidoPaterno = Column(String(100), nullable=False)
     ApellidoMaterno = Column(String(100), nullable=False)
