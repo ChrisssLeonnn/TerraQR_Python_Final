@@ -3,8 +3,8 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import RedirectResponse
 from fastapi.templating import Jinja2Templates
 
-from app.routers import auth, personas, eventos, checkin, web, registration # Changed qr_delivery to registration
-from app.db.database import engine, Base
+from app.routers import auth, personas, eventos, checkin, web, registration
+from app.db.database import engine
 
 app = FastAPI(
     title="TerraQR Municipal System API (Final Version)",
