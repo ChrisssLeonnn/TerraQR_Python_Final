@@ -14,3 +14,4 @@ alembic
 fpdf2
 qrcode
 Pillow
+bcrypt==4.0.1
