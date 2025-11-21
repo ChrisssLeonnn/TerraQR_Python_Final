@@ -68,6 +68,19 @@ async def create_persona(db: AsyncSession, persona_in: schemas.PersonaCreate) ->
     
     return db_persona
 
-def generate_qr_url(qr_token: UUID) -> str:
-    """Generates the official TerraQR validation URL."""
-    return f"{settings.TERRAQR_BASE_URL}/scan/{str(qr_token)}"
+async def get_personas_by_telefono(db: AsyncSession, telefono: str) -> List[models.Persona]:
+    """Fetches all persons with a given phone number."""
+    result = await db.execute(select(models.Persona).filter(models.Persona.Telefono == telefono))
+    return result.scalars().all()
+
+async def delete_personas_by_telefono(db: AsyncSession, telefono: str) -> int:
+    """Deletes all persons with a given phone number and returns the number of deleted persons."""
+    personas_to_delete = await get_personas_by_telefono(db, telefono)
+    if not personas_to_delete:
+        return 0
+    
+    for persona in personas_to_delete:
+        await db.delete(persona)
+    
+    await db.commit()
+    return len(personas_to_delete)

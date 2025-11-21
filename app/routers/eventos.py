@@ -22,8 +22,10 @@ async def create_new_evento(
         new_evento = await eventos_service.create_evento(db, evento_in)
         return new_evento
     except Exception as e:
-        # Log the exception e
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Could not create event.")
+        # In a real application, you would log the error here
+        # import logging
+        # logging.exception("Error creating event")
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="No se pudo crear el evento.")
 
 @router.get("/", response_model=List[schemas.Evento])
 async def get_all_eventos_list(

@@ -27,5 +27,7 @@ async def register_asistencia_api(
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(e))
     except Exception as e:
-        # Log exception e
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Ocurrió un error al registrar la asistencia.")
+        # In a real application, you would log the error here
+        # import logging
+        # logging.exception("Error registering asistencia")
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Ocurrió un error inesperado al registrar la asistencia.")
