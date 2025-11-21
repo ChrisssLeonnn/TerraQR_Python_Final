@@ -32,7 +32,7 @@ async def create_persona(db: AsyncSession, persona_in: schemas.PersonaCreate) ->
     """
     # 1. Calculate age and TipoPersona
     today = date.today()
-    age = today.year - persona_in.FechaNacimiento.year - ((today.month, today.day) < (persona_in.FechaNacimiento.month, persona_in.FechaNacimiento.day))
+    age = today.year - persona_in.AnioNacimiento
     
     if age < 18:
         tipo_persona = "Nino"
@@ -53,7 +53,7 @@ async def create_persona(db: AsyncSession, persona_in: schemas.PersonaCreate) ->
         Nombre=persona_in.Nombre,
         ApellidoPaterno=persona_in.ApellidoPaterno,
         ApellidoMaterno=persona_in.ApellidoMaterno,
-        FechaNacimiento=persona_in.FechaNacimiento,
+        AnioNacimiento=persona_in.AnioNacimiento,
         Genero=persona_in.Genero,
         Colonia=persona_in.Colonia,
         Correo=persona_in.Correo,

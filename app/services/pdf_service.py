@@ -39,7 +39,7 @@ def generate_qr_pdf(persona: models.Persona, qr_url: str) -> bytes:
     # Calculate age
     from datetime import date
     today = date.today()
-    age = today.year - persona.FechaNacimiento.year - ((today.month, today.day) < (persona.FechaNacimiento.month, persona.FechaNacimiento.day))
+    age = today.year - persona.AnioNacimiento
     pdf.cell(200, 10, f"Edad: {age} años", ln=True)
 
     pdf.ln(10)

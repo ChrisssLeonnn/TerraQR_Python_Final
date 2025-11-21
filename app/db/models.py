@@ -24,7 +24,7 @@ class Persona(Base):
     Nombre = Column(String(150), nullable=False)
     ApellidoPaterno = Column(String(100), nullable=False)
     ApellidoMaterno = Column(String(100), nullable=False)
-    FechaNacimiento = Column(Date, nullable=False)
+    AnioNacimiento = Column(Integer, nullable=False)
     Genero = Column(String(30), nullable=False)
     Colonia = Column(String(150), nullable=False)
     Correo = Column(String(200), nullable=False)

@@ -9,7 +9,7 @@ class PersonaBase(BaseModel):
     Nombre: str = Field(..., max_length=150)
     ApellidoPaterno: str = Field(..., max_length=100)
     ApellidoMaterno: str = Field(..., max_length=100)
-    FechaNacimiento: date
+    AnioNacimiento: int
     Genero: str = Field(..., max_length=30)
     Colonia: str = Field(..., max_length=150)
     Correo: EmailStr = Field(..., max_length=200)
@@ -34,10 +34,10 @@ class PersonaWithQR(Persona):
 class PersonaPublic(BaseModel):
     NombreCompleto: str
     Colonia: str
-    CodigoPostal: Optional[str] = None # New field
-    FechaNacimiento: date
+    CodigoPostal: Optional[str] = None
+    AnioNacimiento: int
     Genero: str
-    TipoPersona: str # New field
+    TipoPersona: str
     CantidadAcompanantesRegistrados: Optional[int] = None # For display on QR validation page
 
     class Config:
