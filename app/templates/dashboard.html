@@ -1,0 +1,116 @@
+{% extends "_base.html" %}
+
+{% block title %}Dashboard de Asistencia{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">Dashboard</h1>
+    </div>
+
+    <!-- Tarjetas de Estadísticas Principales -->
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card text-white bg-primary mb-3">
+                <div class="card-header">Total de Registros</div>
+                <div class="card-body">
+                    <h5 class="card-title" id="total-registrations">Cargando...</h5>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-white bg-success mb-3">
+                <div class="card-header">Total de Asistencia</div>
+                <div class="card-body">
+                    <h5 class="card-title" id="total-attendance">Cargando...</h5>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Gráficas -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card mb-3">
+                <div class="card-header">Registros por Tipo de Persona</div>
+                <div class="card-body">
+                    <canvas id="registrations-by-type-chart"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card mb-3">
+                <div class="card-header">Asistencia por Tipo de Persona</div>
+                <div class="card-body">
+                    <canvas id="attendance-by-type-chart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card mb-3">
+                <div class="card-header">Asistencia en las últimas 24 horas</div>
+                <div class="card-body">
+                    <canvas id="attendance-over-time-chart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        fetch('/api/dashboard/stats')
+            .then(response => response.json())
+            .then(data => {
+                // Actualizar tarjetas
+                document.getElementById('total-registrations').innerText = data.total_registrations;
+                document.getElementById('total-attendance').innerText = data.total_attendance;
+
+                // Gráfica de Registros por Tipo
+                new Chart(document.getElementById('registrations-by-type-chart'), {
+                    type: 'doughnut',
+                    data: {
+                        labels: Object.keys(data.registrations_by_type),
+                        datasets: [{
+                            label: 'Registros',
+                            data: Object.values(data.registrations_by_type),
+                            backgroundColor: ['#007bff', '#28a745', '#ffc107'],
+                        }]
+                    }
+                });
+
+                // Gráfica de Asistencia por Tipo
+                new Chart(document.getElementById('attendance-by-type-chart'), {
+                    type: 'pie',
+                    data: {
+                        labels: Object.keys(data.attendance_by_type),
+                        datasets: [{
+                            label: 'Asistencia',
+                            data: Object.values(data.attendance_by_type),
+                            backgroundColor: ['#007bff', '#28a745', '#ffc107'],
+                        }]
+                    }
+                });
+
+                // Gráfica de Asistencia en el Tiempo
+                new Chart(document.getElementById('attendance-over-time-chart'), {
+                    type: 'line',
+                    data: {
+                        labels: Object.keys(data.attendance_over_time),
+                        datasets: [{
+                            label: 'Asistentes',
+                            data: Object.values(data.attendance_over_time),
+                            borderColor: '#dc3545',
+                            fill: false,
+                            tension: 0.1
+                        }]
+                    }
+                });
+            })
+            .catch(error => console.error('Error fetching dashboard data:', error));
+    });
+</script>
+{% endblock %}

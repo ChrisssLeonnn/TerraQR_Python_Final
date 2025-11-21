@@ -185,3 +185,14 @@ async def validate_and_register_qr_page( # Renamed function
 # @router.post("/access/{qr_token}")
 # async def handle_web_access(...):
 #     pass
+
+@router.get("/dashboard", response_class=HTMLResponse)
+async def dashboard_page(
+    request: Request,
+    current_operador: models.Operador = Depends(get_current_operador_from_cookie),
+):
+    """Displays the dashboard page."""
+    if not current_operador:
+        return RedirectResponse(url="/login", status_code=status.HTTP_303_SEE_OTHER)
+    
+    return templates.TemplateResponse("dashboard.html", {"request": request, "current_operador": current_operador})

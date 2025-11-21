@@ -54,9 +54,10 @@ async def get_personas_by_telefono_api(
 async def delete_personas_by_telefono_api(
     telefono: str,
     db: AsyncSession = Depends(get_db),
+    current_operador: models.Operador = Depends(get_current_operador)
 ):
     """
-    Deletes all persons registered with a given phone number.
+    Deletes all persons registered with a given phone number. Requires operator authentication.
     """
     deleted_count = await personas_service.delete_personas_by_telefono(db, telefono)
     if deleted_count == 0:
