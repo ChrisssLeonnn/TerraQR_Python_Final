@@ -67,9 +67,10 @@ from typing import List
 async def get_personas_by_telefono_api(
     telefono: str,
     db: AsyncSession = Depends(get_db),
+    current_operador: models.Operador = Depends(get_current_operador)
 ):
     """
-    Retrieves a list of all persons registered with a given phone number.
+    Retrieves a list of all persons registered with a given phone number. Requires operator authentication.
     """
     personas = await personas_service.get_personas_by_telefono(db, telefono)
     return personas
