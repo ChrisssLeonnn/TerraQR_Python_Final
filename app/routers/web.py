@@ -67,7 +67,7 @@ async def handle_login(
     next_url = request.query_params.get("next", "/scan") # Changed default redirect
     response = RedirectResponse(url=next_url, status_code=status.HTTP_303_SEE_OTHER)
     response.set_cookie(
-        key="access_token", value=access_token, httpy_only=True, samesite="Lax"
+        key="access_token", value=access_token, httponly=True, samesite="Lax"
     )
     return response
 
