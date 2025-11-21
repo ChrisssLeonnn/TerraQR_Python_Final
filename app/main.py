@@ -3,7 +3,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import RedirectResponse
 from fastapi.templating import Jinja2Templates
 
-from app.routers import auth, personas, eventos, checkin, web, registration
+from app.routers import auth, personas, eventos, checkin, web
 from app.db.database import engine
 
 app = FastAPI(
@@ -20,7 +20,6 @@ app.include_router(auth.router, prefix="/api/auth", tags=["Autenticación API"])
 app.include_router(personas.router, prefix="/api/personas", tags=["Personas API"])
 app.include_router(eventos.router, prefix="/api/eventos", tags=["Eventos API"])
 app.include_router(checkin.router, prefix="/api/checkin", tags=["Check-In API"])
-app.include_router(registration.router, prefix="/api/registration", tags=["Registro de Grupos"]) # New Registration Router
 
 # --- Web Interface Routers ---
 # The user specified the QR URL should be terraqr.xyz/scan/{token}

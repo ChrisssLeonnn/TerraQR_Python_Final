@@ -16,24 +16,36 @@ async def get_persona_by_email(db: AsyncSession, email: str) -> Optional[models.
     result = await db.execute(select(models.Persona).filter(models.Persona.Correo == email))
     return result.scalars().first()
 
-async def create_persona(db: AsyncSession, persona_in: schemas.PersonaCreate, adulto_responsable_id: Optional[UUID] = None, inherit_contact_info: bool = False) -> models.Persona:
+async def get_persona_by_telefono(db: AsyncSession, telefono: str) -> Optional[models.Persona]:
+    """Fetches a person by their phone number."""
+    result = await db.execute(select(models.Persona).filter(models.Persona.Telefono == telefono, models.Persona.TipoPersona == 'Adulto'))
+    return result.scalars().first()
+
+from datetime import date
+
+async def create_persona(db: AsyncSession, persona_in: schemas.PersonaCreate) -> models.Persona:
     """
     Creates a new person in the database.
+    - Calculates TipoPersona based on age.
+    - Enforces that only one adult can be registered per phone number.
     - Generates PersonaId and QRToken.
-    - Links to an adult responsible if provided.
-    - Inherits contact info from adult if inherit_contact_info is True.
     """
-    # Handle inherited contact info for companions
-    colonia = persona_in.Colonia
-    correo = persona_in.Correo
-    telefono = persona_in.Telefono
+    # 1. Calculate age and TipoPersona
+    today = date.today()
+    age = today.year - persona_in.FechaNacimiento.year - ((today.month, today.day) < (persona_in.FechaNacimiento.month, persona_in.FechaNacimiento.day))
     
-    if inherit_contact_info and adulto_responsable_id:
-        adulto = await db.get(models.Persona, adulto_responsable_id)
-        if adulto:
-            colonia = adulto.Colonia
-            correo = adulto.Correo
-            telefono = adulto.Telefono
+    if age < 18:
+        tipo_persona = "Nino"
+    elif 18 <= age < 60:
+        tipo_persona = "Adulto"
+    else:
+        tipo_persona = "TerceraEdad"
+
+    # 2. Enforce one adult per phone number
+    if tipo_persona == 'Adulto':
+        existing_persona = await get_persona_by_telefono(db, persona_in.Telefono)
+        if existing_persona:
+            raise ValueError("Ya existe un adulto registrado con este número de teléfono.")
 
     db_persona = models.Persona(
         PersonaId=uuid4(),
@@ -43,12 +55,11 @@ async def create_persona(db: AsyncSession, persona_in: schemas.PersonaCreate, ad
         ApellidoMaterno=persona_in.ApellidoMaterno,
         FechaNacimiento=persona_in.FechaNacimiento,
         Genero=persona_in.Genero,
-        Colonia=colonia, # Use inherited or provided
-        Correo=correo,   # Use inherited or provided
-        Telefono=telefono, # Use inherited or provided
+        Colonia=persona_in.Colonia,
+        Correo=persona_in.Correo,
+        Telefono=persona_in.Telefono,
         CodigoPostal=persona_in.CodigoPostal,
-        TipoPersona=persona_in.TipoPersona,
-        AdultoResponsableId=adulto_responsable_id
+        TipoPersona=tipo_persona,
     )
     
     db.add(db_persona)
@@ -56,34 +67,6 @@ async def create_persona(db: AsyncSession, persona_in: schemas.PersonaCreate, ad
     await db.refresh(db_persona)
     
     return db_persona
-
-async def create_group_registration(db: AsyncSession, group_request: schemas.GroupRegistrationRequest) -> models.Persona:
-    """
-    Registers an adult and their accompanying children/seniors.
-    Returns the registered adult Persona.
-    """
-    # 1. Create the adult persona
-    adulto_persona = await create_persona(db, group_request.adulto)
-
-    # 2. Create accompanying personas and link them to the adult
-    if group_request.acompanantes:
-        for acompanante_data in group_request.acompanantes:
-            # Convert AcompananteCreate to PersonaCreate for reuse
-            persona_create_data = schemas.PersonaCreate(
-                Nombre=acompanante_data.Nombre,
-                ApellidoPaterno=acompanante_data.ApellidoPaterno,
-                ApellidoMaterno=acompanante_data.ApellidoMaterno,
-                FechaNacimiento=acompanante_data.FechaNacimiento,
-                Genero=acompanante_data.Genero,
-                Colonia=group_request.adulto.Colonia, # Inherit from adult
-                Correo=group_request.adulto.Correo,   # Inherit from adult
-                Telefono=group_request.adulto.Telefono, # Inherit from adult
-                CodigoPostal=acompanante_data.CodigoPostal,
-                TipoPersona=acompanante_data.TipoPersona,
-            )
-            await create_persona(db, persona_create_data, adulto_responsable_id=adulto_persona.PersonaId, inherit_contact_info=True)
-    
-    return adulto_persona
 
 def generate_qr_url(qr_token: UUID) -> str:
     """Generates the official TerraQR validation URL."""

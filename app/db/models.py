@@ -30,12 +30,10 @@ class Persona(Base):
     Correo = Column(String(200), nullable=False)
     Telefono = Column(String(20), nullable=False)
     FechaRegistro = Column(DateTime, nullable=False, default=datetime.utcnow)
-    TipoPersona = Column(String(30), nullable=False, default='Adulto') # New field
-    AdultoResponsableId = Column(UNIQUEIDENTIFIER, ForeignKey('terraqr.Persona.PersonaId'), nullable=True) # New field
-    CodigoPostal = Column(String(10), nullable=True) # New field
+    TipoPersona = Column(String(30), nullable=False)
+    CodigoPostal = Column(String(10), nullable=True)
 
     asistencias = relationship("Asistencia", back_populates="persona")
-    acompanantes = relationship("Persona", backref="adulto_responsable", remote_side=[PersonaId]) # New relationship for companions
 
 class Operador(Base):
     __tablename__ = 'Operador'
@@ -67,7 +65,6 @@ class Asistencia(Base):
     PersonaId = Column(UNIQUEIDENTIFIER, ForeignKey('terraqr.Persona.PersonaId'), nullable=False)
     EventoId = Column(UNIQUEIDENTIFIER, ForeignKey('terraqr.Evento.EventoId'), nullable=False)
     FechaCheckIn = Column(DateTime, nullable=False, default=datetime.utcnow)
-    CantidadAcompanantes = Column(Integer, nullable=True) # New field
 
     persona = relationship("Persona", back_populates="asistencias")
     evento = relationship("Evento", back_populates="asistencias")
