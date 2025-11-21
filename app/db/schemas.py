@@ -6,14 +6,14 @@ from datetime import date, datetime
 # --- Base Schemas ---
 
 class PersonaBase(BaseModel):
-    Nombre: str = Field(..., max_length=150)
-    ApellidoPaterno: str = Field(..., max_length=100)
-    ApellidoMaterno: str = Field(..., max_length=100)
-    AnioNacimiento: int
-    Genero: str = Field(..., max_length=30)
-    Colonia: str = Field(..., max_length=150)
-    Correo: EmailStr = Field(..., max_length=200)
-    Telefono: str = Field(..., max_length=20)
+    Nombre: Optional[str] = Field(None, max_length=150)
+    ApellidoPaterno: Optional[str] = Field(None, max_length=100)
+    ApellidoMaterno: Optional[str] = Field(None, max_length=100)
+    AnioNacimiento: Optional[int] = None
+    Genero: Optional[str] = Field(None, max_length=30)
+    Colonia: Optional[str] = Field(None, max_length=150)
+    Correo: Optional[EmailStr] = Field(None, max_length=200)
+    Telefono: Optional[str] = Field(None, max_length=20)
     CodigoPostal: Optional[str] = Field(None, max_length=10) # New field
 
 class PersonaCreate(PersonaBase):

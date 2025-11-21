@@ -12,7 +12,12 @@ router = APIRouter()
 from fastapi.responses import Response
 from app.services import pdf_service
 
-@router.post("/", response_model=schemas.PersonaWithPDF, status_code=status.HTTP_201_CREATED)
+from fastapi.responses import JSONResponse
+from pydantic import ValidationError
+
+# ... (the rest of the imports)
+
+@router.post("/", status_code=status.HTTP_201_CREATED)
 async def register_new_persona(
     persona_in: schemas.PersonaCreate,
     db: AsyncSession = Depends(get_db),
@@ -20,7 +25,7 @@ async def register_new_persona(
 ):
     """
     Registers a new person, creates a PDF with a QR code, 
-    and returns the person's data along with the URL to the PDF.
+    and returns a JSON response with the person's data and the URL to the PDF.
     Requires operator authentication.
     """
     try:
@@ -35,13 +40,23 @@ async def register_new_persona(
         response_data = schemas.Persona.from_orm(new_persona).dict()
         response_data['pdf_url'] = pdf_url
         
-        return schemas.PersonaWithPDF(**response_data)
+        return JSONResponse(content=response_data, status_code=201)
 
+    except ValidationError as e:
+        return JSONResponse(
+            status_code=422,
+            content={"error": "Validation error", "details": e.errors()}
+        )
     except ValueError as e:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(e))
+        return JSONResponse(
+            status_code=409,
+            content={"error": "Conflict", "message": str(e)}
+        )
     except Exception as e:
-        # Log the exception e
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="An unexpected error occurred.")
+        return JSONResponse(
+            status_code=500,
+            content={"error": "Unexpected error", "message": str(e)}
+        )
 
 
 from typing import List
