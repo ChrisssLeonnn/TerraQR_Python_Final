@@ -28,8 +28,8 @@ class Persona(PersonaBase):
     class Config:
         from_attributes = True
 
-class PersonaWithQR(Persona):
-    qr_url: str
+class PersonaWithPDF(Persona):
+    pdf_url: str
 
 class PersonaPublic(BaseModel):
     NombreCompleto: str

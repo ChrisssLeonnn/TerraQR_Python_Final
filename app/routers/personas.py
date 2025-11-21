@@ -12,21 +12,30 @@ router = APIRouter()
 from fastapi.responses import Response
 from app.services import pdf_service
 
-@router.post("/", status_code=status.HTTP_201_CREATED)
+@router.post("/", response_model=schemas.PersonaWithPDF, status_code=status.HTTP_201_CREATED)
 async def register_new_persona(
     persona_in: schemas.PersonaCreate,
     db: AsyncSession = Depends(get_db),
+    current_operador: models.Operador = Depends(get_current_operador)
 ):
     """
-    Registers a new person and returns a PDF with the QR code.
+    Registers a new person, creates a PDF with a QR code, 
+    and returns the person's data along with the URL to the PDF.
+    Requires operator authentication.
     """
     try:
         new_persona = await personas_service.create_persona(db, persona_in)
         qr_url = personas_service.generate_qr_url(new_persona.QRToken)
         
-        pdf_bytes = pdf_service.generate_qr_pdf(new_persona, qr_url)
+        pdf_path = pdf_service.generate_qr_pdf(new_persona, qr_url)
         
-        return Response(content=pdf_bytes, media_type="application/pdf")
+        # Create the full URL for the PDF
+        pdf_url = f"{settings.TERRAQR_BASE_URL}/{pdf_path.replace('app/', '')}"
+
+        response_data = schemas.Persona.from_orm(new_persona).dict()
+        response_data['pdf_url'] = pdf_url
+        
+        return schemas.PersonaWithPDF(**response_data)
 
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(e))

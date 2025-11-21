@@ -4,8 +4,11 @@ import qrcode
 from PIL import Image
 import io
 
-def generate_qr_pdf(persona: models.Persona, qr_url: str) -> bytes:
-    """Generates a PDF with the QR code and person's information."""
+def generate_qr_pdf(persona: models.Persona, qr_url: str) -> str:
+    """
+    Generates a PDF with the QR code and person's information,
+    saves it to a file, and returns the path to the file.
+    """
     
     # Generate QR code image
     qr = qrcode.QRCode(
@@ -51,4 +54,8 @@ def generate_qr_pdf(persona: models.Persona, qr_url: str) -> bytes:
     pdf.set_font("Arial", "I", 8)
     pdf.cell(200, 10, "Presenta este código QR en el acceso del evento.", ln=True, align="C")
 
-    return pdf.output(dest='S').encode('latin-1')
+    # Save the PDF to a file
+    file_path = f"app/static/qrs/{persona.PersonaId}.pdf"
+    pdf.output(file_path)
+    
+    return file_path
