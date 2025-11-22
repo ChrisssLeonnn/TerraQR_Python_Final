@@ -19,6 +19,9 @@ class Settings(BaseSettings):
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 8  # 8 hours
 
+    # Webhook settings
+    VERIFY_TOKEN: str
+
     # Application settings
     TERRAQR_BASE_URL: str = "https://terraqr.xyz"
 

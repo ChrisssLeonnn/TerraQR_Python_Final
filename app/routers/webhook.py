@@ -37,23 +37,17 @@ async def whatsapp_webhook(
         
     return {"status": "ok"}
 
+from app.core.config import settings
+
+# ... (the rest of the imports)
+
 @router.get("/whatsapp")
 async def verify_webhook(request: Request):
     """
     Webhook verification for WhatsApp Cloud API.
     """
-    # This is for the initial verification of the webhook URL.
-    # You need to get the VERIFY_TOKEN from your Meta for Developers app configuration.
-    VERIFY_TOKEN = "your_verify_token" # Replace with your verify token
-
-    mode = request.query_params.get("hub.mode")
-    token = request.query_params.get("hub.verify_token")
-    challenge = request.query_params.get("hub.challenge")
-
-    if mode and token:
-        if mode == "subscribe" and token == VERIFY_TOKEN:
-            return int(challenge)
-        else:
-            raise HTTPException(status_code=403, detail="Verification token mismatch")
-    
-    raise HTTPException(status_code=400, detail="Missing parameters")
+    if (request.query_params.get("hub.mode") == "subscribe" and
+        request.query_params.get("hub.verify_token") == settings.VERIFY_TOKEN):
+        return int(request.query_params.get("hub.challenge"))
+    else:
+        raise HTTPException(status_code=403, detail="Verification token mismatch")
