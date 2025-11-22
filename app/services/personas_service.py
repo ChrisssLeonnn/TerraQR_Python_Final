@@ -23,7 +23,12 @@ async def get_persona_by_telefono(db: AsyncSession, telefono: str) -> Optional[m
 
 from datetime import date
 
-async def create_persona(db: AsyncSession, persona_in: schemas.PersonaCreate) -> models.Persona:
+async def get_persona_by_contact_id(db: AsyncSession, contact_id: str) -> Optional[models.Persona]:
+    """Fetches a person by their ManyChat Contact ID."""
+    result = await db.execute(select(models.Persona).filter(models.Persona.ManyChatContactId == contact_id))
+    return result.scalars().first()
+
+async def create_persona(db: AsyncSession, persona_in: schemas.PersonaCreate, contact_id: str = None) -> models.Persona:
     """
     Creates a new person in the database.
     - Calculates TipoPersona based on age.
@@ -60,6 +65,7 @@ async def create_persona(db: AsyncSession, persona_in: schemas.PersonaCreate) ->
         Telefono=persona_in.Telefono,
         CodigoPostal=persona_in.CodigoPostal,
         TipoPersona=tipo_persona,
+        ManyChatContactId=contact_id
     )
     
     db.add(db_persona)
@@ -68,14 +74,13 @@ async def create_persona(db: AsyncSession, persona_in: schemas.PersonaCreate) ->
     
     return db_persona
 
-async def get_personas_by_telefono(db: AsyncSession, telefono: str) -> List[models.Persona]:
-    """Fetches all persons with a given phone number."""
-    result = await db.execute(select(models.Persona).filter(models.Persona.Telefono == telefono))
-    return result.scalars().all()
+def generate_qr_url(qr_token: UUID) -> str:
+    """Generates the official TerraQR validation URL."""
+    return f"{settings.TERRAQR_BASE_URL}/scan/{str(qr_token)}"
 
-async def delete_personas_by_telefono(db: AsyncSession, telefono: str) -> int:
-    """Deletes all persons with a given phone number and returns the number of deleted persons."""
-    personas_to_delete = await get_personas_by_telefono(db, telefono)
+async def delete_personas_by_contact_id(db: AsyncSession, contact_id: str) -> int:
+    """Deletes all persons with a given ManyChat contact ID and returns the number of deleted persons."""
+    personas_to_delete = await get_personas_by_contact_id(db, contact_id)
     if not personas_to_delete:
         return 0
     

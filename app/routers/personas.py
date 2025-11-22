@@ -17,7 +17,7 @@ from pydantic import ValidationError
 
 # ... (the rest of the imports)
 
-@router.post("/", status_code=status.HTTP_201_CREATED)
+@router.post("/", response_model=schemas.PersonaWithPDF, status_code=status.HTTP_201_CREATED)
 async def register_new_persona(
     persona_in: schemas.PersonaCreate,
     db: AsyncSession = Depends(get_db),
@@ -25,11 +25,11 @@ async def register_new_persona(
 ):
     """
     Registers a new person, creates a PDF with a QR code, 
-    and returns a JSON response with the person's data and the URL to the PDF.
+    and returns the person's data along with the URL to the PDF.
     Requires operator authentication.
     """
     try:
-        new_persona = await personas_service.create_persona(db, persona_in)
+        new_persona = await personas_service.create_persona(db, persona_in, persona_in.ManyChatContactId)
         qr_url = personas_service.generate_qr_url(new_persona.QRToken)
         
         pdf_path = pdf_service.generate_qr_pdf(new_persona, qr_url)
@@ -63,29 +63,29 @@ from typing import List
 
 # ... (the rest of the imports)
 
-@router.get("/telefono/{telefono}", response_model=List[schemas.Persona])
-async def get_personas_by_telefono_api(
-    telefono: str,
+@router.get("/manychat/{contact_id}", response_model=List[schemas.Persona])
+async def get_personas_by_contact_id_api(
+    contact_id: str,
     db: AsyncSession = Depends(get_db),
     current_operador: models.Operador = Depends(get_current_operador)
 ):
     """
-    Retrieves a list of all persons registered with a given phone number. Requires operator authentication.
+    Retrieves a list of all persons registered with a given ManyChat contact ID. Requires operator authentication.
     """
-    personas = await personas_service.get_personas_by_telefono(db, telefono)
+    personas = await personas_service.get_personas_by_contact_id(db, contact_id)
     return personas
 
-@router.delete("/telefono/{telefono}", status_code=status.HTTP_200_OK)
-async def delete_personas_by_telefono_api(
-    telefono: str,
+@router.delete("/manychat/{contact_id}", status_code=status.HTTP_200_OK)
+async def delete_personas_by_contact_id_api(
+    contact_id: str,
     db: AsyncSession = Depends(get_db),
     current_operador: models.Operador = Depends(get_current_operador)
 ):
     """
-    Deletes all persons registered with a given phone number. Requires operator authentication.
+    Deletes all persons registered with a given ManyChat contact ID. Requires operator authentication.
     """
-    deleted_count = await personas_service.delete_personas_by_telefono(db, telefono)
+    deleted_count = await personas_service.delete_personas_by_contact_id(db, contact_id)
     if deleted_count == 0:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No se encontraron personas con ese número de teléfono.")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No se encontraron personas con ese ID de contacto.")
     
     return {"message": f"Se eliminaron {deleted_count} personas."}
