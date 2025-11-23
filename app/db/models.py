@@ -32,7 +32,6 @@ class Persona(Base):
     FechaRegistro = Column(DateTime, nullable=False, default=datetime.utcnow)
     TipoPersona = Column(String(30), nullable=False)
     CodigoPostal = Column(String(10), nullable=True)
-    ManyChatContactId = Column(String(100), unique=True, nullable=True)
 
     asistencias = relationship("Asistencia", back_populates="persona")
 

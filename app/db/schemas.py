@@ -17,7 +17,7 @@ class PersonaBase(BaseModel):
     CodigoPostal: Optional[str] = Field(None, max_length=10) # New field
 
 class PersonaCreate(PersonaBase):
-    ManyChatContactId: Optional[str] = None
+    pass
 
 class Persona(PersonaBase):
     PersonaId: UUID

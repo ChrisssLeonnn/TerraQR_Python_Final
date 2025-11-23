@@ -2,6 +2,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from uuid import UUID, uuid4
 from typing import Optional, List
+from datetime import date
 
 from app.db import models, schemas
 from app.core.config import settings
@@ -21,14 +22,7 @@ async def get_persona_by_telefono(db: AsyncSession, telefono: str) -> Optional[m
     result = await db.execute(select(models.Persona).filter(models.Persona.Telefono == telefono, models.Persona.TipoPersona == 'Adulto'))
     return result.scalars().first()
 
-from datetime import date
-
-async def get_persona_by_contact_id(db: AsyncSession, contact_id: str) -> Optional[models.Persona]:
-    """Fetches a person by their ManyChat Contact ID."""
-    result = await db.execute(select(models.Persona).filter(models.Persona.ManyChatContactId == contact_id))
-    return result.scalars().first()
-
-async def create_persona(db: AsyncSession, persona_in: schemas.PersonaCreate, contact_id: str = None) -> models.Persona:
+async def create_persona(db: AsyncSession, persona_in: schemas.PersonaCreate) -> models.Persona:
     """
     Creates a new person in the database.
     - Calculates TipoPersona based on age.
@@ -65,7 +59,6 @@ async def create_persona(db: AsyncSession, persona_in: schemas.PersonaCreate, co
         Telefono=persona_in.Telefono,
         CodigoPostal=persona_in.CodigoPostal,
         TipoPersona=tipo_persona,
-        ManyChatContactId=contact_id
     )
     
     db.add(db_persona)
@@ -74,13 +67,14 @@ async def create_persona(db: AsyncSession, persona_in: schemas.PersonaCreate, co
     
     return db_persona
 
-def generate_qr_url(qr_token: UUID) -> str:
-    """Generates the official TerraQR validation URL."""
-    return f"{settings.TERRAQR_BASE_URL}/scan/{str(qr_token)}"
+async def get_personas_by_telefono(db: AsyncSession, telefono: str) -> List[models.Persona]:
+    """Fetches all persons with a given phone number."""
+    result = await db.execute(select(models.Persona).filter(models.Persona.Telefono == telefono))
+    return result.scalars().all()
 
-async def delete_personas_by_contact_id(db: AsyncSession, contact_id: str) -> int:
-    """Deletes all persons with a given ManyChat contact ID and returns the number of deleted persons."""
-    personas_to_delete = await get_personas_by_contact_id(db, contact_id)
+async def delete_personas_by_telefono(db: AsyncSession, telefono: str) -> int:
+    """Deletes all persons with a given phone number and returns the number of deleted persons."""
+    personas_to_delete = await get_personas_by_telefono(db, telefono)
     if not personas_to_delete:
         return 0
     
@@ -89,3 +83,7 @@ async def delete_personas_by_contact_id(db: AsyncSession, contact_id: str) -> in
     
     await db.commit()
     return len(personas_to_delete)
+
+def generate_qr_url(qr_token: UUID) -> str:
+    """Generates the official TerraQR validation URL."""
+    return f"{settings.TERRAQR_BASE_URL}/scan/{str(qr_token)}"
