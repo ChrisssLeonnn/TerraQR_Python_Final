@@ -186,6 +186,11 @@ async def validate_and_register_qr_page( # Renamed function
 # async def handle_web_access(...):
 #     pass
 
+@router.get("/privacy", response_class=HTMLResponse)
+async def privacy_policy_page(request: Request):
+    """Displays the privacy policy page."""
+    return templates.TemplateResponse("privacy_policy.html", {"request": request})
+
 @router.get("/dashboard", response_class=HTMLResponse)
 async def dashboard_page(
     request: Request,
