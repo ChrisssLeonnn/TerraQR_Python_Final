@@ -12,6 +12,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     gnupg \
     unixodbc-dev \
     curl \
+    fonts-dejavu \
     && rm -rf /var/lib/apt/lists/*
 
 # Importa la clave GPG de Microsoft

@@ -28,14 +28,15 @@ def generate_qr_pdf(persona: models.Persona, qr_url: str) -> str:
 
     pdf = FPDF()
     pdf.add_page()
+    pdf.add_font('DejaVu', '', '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf', uni=True)
     
     # Title
-    pdf.set_font("Arial", "B", 16)
+    pdf.set_font("DejaVu", "B", 16)
     pdf.cell(200, 10, "Pase de Acceso TerraQR", ln=True, align="C")
     pdf.ln(10)
 
     # Person's information
-    pdf.set_font("Arial", "", 12)
+    pdf.set_font("DejaVu", "", 12)
     pdf.cell(200, 10, f"Nombre: {persona.Nombre} {persona.ApellidoPaterno} {persona.ApellidoMaterno}", ln=True)
     pdf.cell(200, 10, f"Tipo de Persona: {persona.TipoPersona}", ln=True)
     
@@ -51,7 +52,7 @@ def generate_qr_pdf(persona: models.Persona, qr_url: str) -> str:
     pdf.image(io.BytesIO(img_byte_arr), x=55, y=None, w=100)
 
     pdf.ln(10)
-    pdf.set_font("Arial", "I", 8)
+    pdf.set_font("DejaVu", "I", 8)
     pdf.cell(200, 10, "Presenta este código QR en el acceso del evento.", ln=True, align="C")
 
     # Save the PDF to a file
