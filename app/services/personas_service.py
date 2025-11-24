@@ -26,7 +26,6 @@ async def create_persona(db: AsyncSession, persona_in: schemas.PersonaCreate) ->
     """
     Creates a new person in the database.
     - Calculates TipoPersona based on age.
-    - Enforces that only one adult can be registered per phone number.
     - Generates PersonaId and QRToken.
     """
     # 1. Calculate age and TipoPersona
@@ -39,12 +38,6 @@ async def create_persona(db: AsyncSession, persona_in: schemas.PersonaCreate) ->
         tipo_persona = "Adulto"
     else:
         tipo_persona = "TerceraEdad"
-
-    # 2. Enforce one adult per phone number
-    if tipo_persona == 'Adulto':
-        existing_persona = await get_persona_by_telefono(db, persona_in.Telefono)
-        if existing_persona:
-            raise ValueError("Ya existe un adulto registrado con este número de teléfono.")
 
     db_persona = models.Persona(
         PersonaId=uuid4(),
