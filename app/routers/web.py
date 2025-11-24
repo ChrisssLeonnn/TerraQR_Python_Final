@@ -131,20 +131,9 @@ async def validate_and_register_qr_page( # Renamed function
     message = "Acceso registrado correctamente."
     error = None
     
-    # Get the number of companions for this persona
-    # This assumes the adult's QR is scanned.
-    # We need to count how many companions are linked to this adult.
-    num_companions = 0
-    if persona.TipoPersona == "Adulto":
-        # Fetch companions linked to this adult
-        companions_result = await db.execute(
-            select(models.Persona).filter(models.Persona.AdultoResponsableId == persona.PersonaId)
-        )
-        num_companions = len(companions_result.scalars().all())
-
     try:
         # Use the fixed EventoKeyActual from the ASP.NET spec
-        await accesos_service.register_asistencia(db, qr_token, "concierto2025", cantidad_acompanantes=num_companions)
+        await accesos_service.register_asistencia(db, qr_token, "concierto2025")
     except ValueError as e:
         validation_status = "already_registered" if "ya tiene registrada" in str(e) else "error"
         error = str(e)
@@ -157,16 +146,14 @@ async def validate_and_register_qr_page( # Renamed function
         persona=schemas.PersonaPublic(
             NombreCompleto=f"{persona.Nombre} {persona.ApellidoPaterno} {persona.ApellidoMaterno}",
             Colonia=persona.Colonia,
-            CodigoPostal=persona.CodigoPostal, # New field
-            FechaNacimiento=persona.FechaNacimiento,
+            CodigoPostal=persona.CodigoPostal,
+            AnioNacimiento=persona.AnioNacimiento,
             Genero=persona.Genero,
             TipoPersona=persona.TipoPersona,
-            CantidadAcompanantesRegistrados=num_companions
         ),
         eventos_disponibles=[evento_concierto] if evento_concierto else [],
         mensaje=message,
         error=error,
-        cantidad_acompanantes_registrados=num_companions
     )
 
     return templates.TemplateResponse(

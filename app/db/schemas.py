@@ -38,7 +38,6 @@ class PersonaPublic(BaseModel):
     AnioNacimiento: int
     Genero: str
     TipoPersona: str
-    CantidadAcompanantesRegistrados: Optional[int] = None # For display on QR validation page
 
     class Config:
         from_attributes = True
@@ -98,5 +97,3 @@ class WebValidationResult(BaseModel):
     eventos_disponibles: List[Evento]
     mensaje: Optional[str] = None
     error: Optional[str] = None
-    cantidad_acompanantes_registrados: Optional[int] = None # For display on QR validation page
-    cantidad_acompanantes_confirmados: Optional[int] = None # For operator input

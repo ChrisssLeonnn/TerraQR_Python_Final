@@ -29,7 +29,7 @@ async def register_new_persona(
     Requires operator authentication.
     """
     try:
-        new_persona = await personas_service.create_persona(db, persona_in, persona_in.ManyChatContactId)
+        new_persona = await personas_service.create_persona(db, persona_in)
         qr_url = personas_service.generate_qr_url(new_persona.QRToken)
         
         pdf_path = pdf_service.generate_qr_pdf(new_persona, qr_url)
