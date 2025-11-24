@@ -28,7 +28,12 @@ def generate_qr_pdf(persona: models.Persona, qr_url: str) -> str:
 
     pdf = FPDF()
     pdf.add_page()
+    
+    # Agrega las fuentes DejaVu (Regular, Negrita, Cursiva)
+    # La ruta corresponde a la ubicación dentro del contenedor de Docker
     pdf.add_font('DejaVu', '', '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf', uni=True)
+    pdf.add_font('DejaVu', 'B', '/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf', uni=True)
+    pdf.add_font('DejaVu', 'I', '/usr/share/fonts/truetype/dejavu/DejaVuSans-Oblique.ttf', uni=True)
     
     # Title
     pdf.set_font("DejaVu", "B", 16)
