@@ -6,6 +6,7 @@ from app.db import schemas, models
 from app.db.database import get_db
 from app.services import personas_service
 from app.core.security import get_current_operador
+from app.core.config import settings
 
 router = APIRouter()
 
