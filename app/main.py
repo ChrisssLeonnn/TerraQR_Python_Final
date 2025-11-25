@@ -34,6 +34,7 @@ async def startup_event():
     # await create_tables()
     pass
 
+# Force redeploy
 @app.get("/", include_in_schema=False)
 async def root(request: Request):
     """
