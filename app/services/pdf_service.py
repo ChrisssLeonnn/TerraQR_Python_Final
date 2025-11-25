@@ -3,6 +3,7 @@ from app.db import models
 import qrcode
 from PIL import Image
 import io
+import os
 
 def generate_qr_pdf(persona: models.Persona, qr_url: str) -> str:
     """
@@ -60,8 +61,12 @@ def generate_qr_pdf(persona: models.Persona, qr_url: str) -> str:
     pdf.set_font("DejaVu", "I", 8)
     pdf.cell(200, 10, "Presenta este código QR en el acceso del evento.", ln=True, align="C")
 
-    # Save the PDF to a file
+    # Ensure the directory exists before saving the file
     file_path = f"app/static/qrs/{persona.PersonaId}.pdf"
+    directory = os.path.dirname(file_path)
+    os.makedirs(directory, exist_ok=True)
+    
+    # Save the PDF to a file
     pdf.output(file_path)
     
     return file_path
