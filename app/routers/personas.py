@@ -38,10 +38,17 @@ async def register_new_persona(
         # Create the full URL for the PDF
         pdf_url = f"{settings.TERRAQR_BASE_URL}/{pdf_path.replace('app/', '')}"
 
-        response_data = schemas.Persona.from_orm(new_persona).dict()
-        response_data['pdf_url'] = pdf_url
+        # Convert the SQLAlchemy model to a Pydantic Persona model
+        persona_data = schemas.Persona.from_orm(new_persona)
+
+        # Create the final response object that matches the response_model
+        response_object = schemas.PersonaWithPDF(
+            **persona_data.dict(),
+            pdf_url=pdf_url
+        )
         
-        return JSONResponse(content=response_data, status_code=201)
+        # By returning the Pydantic model, we let FastAPI handle the JSON serialization
+        return response_object
 
     except ValidationError as e:
         return JSONResponse(
