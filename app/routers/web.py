@@ -14,29 +14,12 @@ from app.services import (
     eventos_service,
     accesos_service,
 )
-from app.core.security import create_access_token
+from app.core.security import create_access_token, get_current_operador_from_cookie
 from app.core.config import settings
 from jose import JWTError, jwt
 
 router = APIRouter()
 templates = Jinja2Templates(directory="app/templates")
-
-
-async def get_current_operador_from_cookie(
-    request: Request, db: AsyncSession = Depends(get_db)
-) -> Optional[models.Operador]:
-    """Tries to authenticate an operator from a cookie."""
-    token = request.cookies.get("access_token")
-    if not token:
-        return None
-    try:
-        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
-        operador_id: str = payload.get("sub")
-        if operador_id is None:
-            return None
-        return await operadores_service.get_operador_by_id(db, operador_id=operador_id)
-    except JWTError:
-        return None
 
 
 @router.get("/login", response_class=HTMLResponse)

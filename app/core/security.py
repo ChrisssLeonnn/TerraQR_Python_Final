@@ -2,7 +2,7 @@ import hashlib
 from datetime import datetime, timedelta
 from typing import Optional, Union, Any
 
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, status, Request
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 from passlib.context import CryptContext
@@ -31,13 +31,13 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -
     encoded_jwt = jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
     return encoded_jwt
 
-# Dependency to get current user
+# Dependency to get current user from Authorization header
 async def get_current_operador(
     token: str = Depends(oauth2_scheme), 
     db: AsyncSession = Depends(get_db)
 ) -> models.Operador:
     """
-    Decodes JWT token to get the current operator.
+    Decodes JWT token from header to get the current operator.
     Raises HTTPException if the token is invalid or the operator doesn't exist.
     """
     credentials_exception = HTTPException(
@@ -61,3 +61,20 @@ async def get_current_operador(
         raise HTTPException(status_code=400, detail="Inactive user")
         
     return operador
+
+# Dependency to get current user from cookie
+async def get_current_operador_from_cookie(
+    request: Request, db: AsyncSession = Depends(get_db)
+) -> Optional[models.Operador]:
+    """Tries to authenticate an operator from a cookie."""
+    token = request.cookies.get("access_token")
+    if not token:
+        return None
+    try:
+        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
+        operador_id: str = payload.get("sub")
+        if operador_id is None:
+            return None
+        return await operadores_service.get_operador_by_id(db, operador_id=operador_id)
+    except JWTError:
+        return None

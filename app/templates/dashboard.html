@@ -47,23 +47,13 @@
             </div>
         </div>
     </div>
-    <div class="row">
-        <div class="col-md-12">
-            <div class="card mb-3">
-                <div class="card-header">Asistencia en las últimas 24 horas</div>
-                <div class="card-body">
-                    <canvas id="attendance-over-time-chart"></canvas>
-                </div>
-            </div>
-        </div>
-    </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
     document.addEventListener("DOMContentLoaded", function() {
         // Guardar instancias de las gráficas para poder actualizarlas
-        let registrationsChart, attendanceChart, attendanceOverTimeChart;
+        let registrationsChart, attendanceChart;
 
         function updateDashboard() {
             fetch('/api/dashboard/stats')
@@ -115,29 +105,6 @@
                                     label: 'Asistencia',
                                     data: attData,
                                     backgroundColor: ['#007bff', '#28a745', '#ffc107', '#dc3545', '#6c757d'],
-                                }]
-                            }
-                        });
-                    }
-
-                    // 4. Actualizar o crear la gráfica de Asistencia en el Tiempo
-                    const timeLabels = Object.keys(data.attendance_over_time);
-                    const timeData = Object.values(data.attendance_over_time);
-                    if (attendanceOverTimeChart) {
-                        attendanceOverTimeChart.data.labels = timeLabels;
-                        attendanceOverTimeChart.data.datasets[0].data = timeData;
-                        attendanceOverTimeChart.update();
-                    } else {
-                        attendanceOverTimeChart = new Chart(document.getElementById('attendance-over-time-chart'), {
-                            type: 'line',
-                            data: {
-                                labels: timeLabels,
-                                datasets: [{
-                                    label: 'Asistentes',
-                                    data: timeData,
-                                    borderColor: '#dc3545',
-                                    fill: false,
-                                    tension: 0.1
                                 }]
                             }
                         });
