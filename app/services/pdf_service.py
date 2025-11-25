@@ -23,9 +23,9 @@ def generate_qr_pdf(persona: models.Persona, qr_url: str) -> str:
     qr_img = qr.make_image(fill_color="black", back_color="white")
 
     # Save QR code to a byte stream
-    img_byte_arr = io.BytesIO()
-    qr_img.save(img_byte_arr, format='PNG')
-    img_byte_arr = img_byte_arr.getvalue()
+    img_byte_stream = io.BytesIO()
+    qr_img.save(img_byte_stream, format='PNG')
+    img_byte_stream.seek(0)  # Rewind the stream to the beginning before reading
 
     pdf = FPDF()
     pdf.add_page()
@@ -49,18 +49,12 @@ def generate_qr_pdf(persona: models.Persona, qr_url: str) -> str:
     pdf.ln(10)
 
     # QR Code
-    pdf.image(io.BytesIO(img_byte_arr), x=55, y=None, w=100)
+    pdf.image(img_byte_stream, x=55, y=None, w=100)
 
     pdf.ln(10)
     pdf.set_font("DejaVu", "I", 8)
     pdf.cell(200, 10, "Presenta este código QR en el acceso del evento.", ln=True, align="C")
 
-    # Ensure the directory exists before saving the file
-    file_path = f"app/static/qrs/{persona.PersonaId}.pdf"
-    directory = os.path.dirname(file_path)
-    os.makedirs(directory, exist_ok=True)
-    
-    # Save the PDF to a file
-    pdf.output(file_path)
-    
-    return file_path
+    # Return the PDF content as a byte string
+    # The 'S' destination means output as a string, then we encode it to bytes
+    return pdf.output(dest='S').encode('latin-1')
