@@ -45,12 +45,6 @@ def generate_qr_pdf(persona: models.Persona, qr_url: str) -> str:
     pdf.set_font("DejaVu", "", 12)
     pdf.cell(200, 10, f"Nombre: {persona.Nombre} {persona.ApellidoPaterno} {persona.ApellidoMaterno}", ln=True)
     pdf.cell(200, 10, f"Tipo de Persona: {persona.TipoPersona}", ln=True)
-    
-    # Calculate age
-    from datetime import date
-    today = date.today()
-    age = today.year - persona.AnioNacimiento
-    pdf.cell(200, 10, f"Edad: {age} años", ln=True)
 
     pdf.ln(10)
 

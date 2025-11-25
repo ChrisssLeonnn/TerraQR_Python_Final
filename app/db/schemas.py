@@ -69,7 +69,6 @@ class EventoCreate(EventoBase):
 
 class Evento(EventoBase):
     EventoId: UUID
-    FechaRegistro: datetime
 
     class Config:
         from_attributes = True
