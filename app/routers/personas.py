@@ -1,22 +1,16 @@
 from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.responses import Response, JSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from uuid import UUID
+from pydantic import ValidationError
 
 from app.db import schemas, models
 from app.db.database import get_db
-from app.services import personas_service
+from app.services import personas_service, pdf_service
 from app.core.security import get_current_operador
 from app.core.config import settings
 
 router = APIRouter()
-
-from fastapi.responses import Response
-from app.services import pdf_service
-
-from fastapi.responses import JSONResponse
-from pydantic import ValidationError
-
-# ... (the rest of the imports)
 
 @router.post("/", response_model=schemas.PersonaWithPDF, status_code=status.HTTP_201_CREATED)
 async def register_new_persona(
@@ -25,18 +19,15 @@ async def register_new_persona(
     current_operador: models.Operador = Depends(get_current_operador)
 ):
     """
-    Registers a new person, creates a PDF with a QR code, 
-    and returns the person's data along with the URL to the PDF.
+    Registers a new person and returns data including a durable URL
+    to generate the QR code PDF.
     Requires operator authentication.
     """
     try:
         new_persona = await personas_service.create_persona(db, persona_in)
-        qr_url = personas_service.generate_qr_url(new_persona.QRToken)
         
-        pdf_path = pdf_service.generate_qr_pdf(new_persona, qr_url)
-        
-        # Create the full URL for the PDF
-        pdf_url = f"{settings.TERRAQR_BASE_URL}/{pdf_path.replace('app/', '')}"
+        # Construct the durable URL to our new dynamic PDF endpoint
+        pdf_url = f"{settings.TERRAQR_BASE_URL}/api/personas/qr/{new_persona.PersonaId}"
 
         # Convert the SQLAlchemy model to a Pydantic Persona model
         persona_data = schemas.Persona.from_orm(new_persona)
@@ -47,7 +38,6 @@ async def register_new_persona(
             pdf_url=pdf_url
         )
         
-        # By returning the Pydantic model, we let FastAPI handle the JSON serialization
         return response_object
 
     except ValidationError as e:
@@ -61,12 +51,35 @@ async def register_new_persona(
             content={"error": "Conflict", "message": str(e)}
         )
     except Exception as e:
+        # Log the exception for debugging
+        print(f"Unexpected error in register_new_persona: {e}")
         return JSONResponse(
             status_code=500,
             content={"error": "Unexpected error", "message": str(e)}
         )
 
+@router.get("/qr/{persona_id}")
+async def generate_persona_qr_pdf(
+    persona_id: UUID,
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Generates and returns a PDF with the QR code for a given person ID.
+    This endpoint is designed to be used as a durable link.
+    """
+    persona = await personas_service.get_persona_by_id(db, persona_id)
+    if not persona:
+        raise HTTPException(status_code=404, detail="Persona no encontrada.")
 
-from typing import List
-
-# ... (the rest of the imports)
+    # The URL to be encoded in the QR code itself
+    qr_encode_url = personas_service.generate_qr_url(persona.QRToken)
+    
+    # Generate PDF in memory
+    pdf_bytes = pdf_service.generate_qr_pdf(persona, qr_encode_url)
+    
+    # Return the PDF as a response
+    return Response(
+        content=pdf_bytes, 
+        media_type="application/pdf",
+        headers={"Content-Disposition": f"inline; filename=\"{persona.PersonaId}.pdf\""}
+    )

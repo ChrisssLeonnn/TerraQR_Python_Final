@@ -7,6 +7,11 @@ from datetime import date
 from app.db import models, schemas
 from app.core.config import settings
 
+async def get_persona_by_id(db: AsyncSession, persona_id: UUID) -> Optional[models.Persona]:
+    """Fetches a person by their PersonaId."""
+    result = await db.execute(select(models.Persona).filter(models.Persona.PersonaId == persona_id))
+    return result.scalars().first()
+
 async def get_persona_by_qr_token(db: AsyncSession, qr_token: UUID) -> Optional[models.Persona]:
     """Fetches a person by their QRToken."""
     result = await db.execute(select(models.Persona).filter(models.Persona.QRToken == qr_token))
