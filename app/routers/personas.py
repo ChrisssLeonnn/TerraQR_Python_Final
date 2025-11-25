@@ -63,30 +63,3 @@ async def register_new_persona(
 from typing import List
 
 # ... (the rest of the imports)
-
-@router.get("/telefono/{telefono}", response_model=List[schemas.Persona])
-async def get_personas_by_telefono_api(
-    telefono: str,
-    db: AsyncSession = Depends(get_db),
-    current_operador: models.Operador = Depends(get_current_operador)
-):
-    """
-    Retrieves a list of all persons registered with a given phone number. Requires operator authentication.
-    """
-    personas = await personas_service.get_personas_by_telefono(db, telefono)
-    return personas
-
-@router.delete("/telefono/{telefono}", status_code=status.HTTP_200_OK)
-async def delete_personas_by_telefono_api(
-    telefono: str,
-    db: AsyncSession = Depends(get_db),
-    current_operador: models.Operador = Depends(get_current_operador)
-):
-    """
-    Deletes all persons registered with a given phone number. Requires operator authentication.
-    """
-    deleted_count = await personas_service.delete_personas_by_telefono(db, telefono)
-    if deleted_count == 0:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No se encontraron personas con ese número de teléfono.")
-    
-    return {"message": f"Se eliminaron {deleted_count} personas."}
