@@ -21,9 +21,7 @@
                 <h1 class="display-4 fw-bold">ACCESO REGISTRADO</h1>
                 <p class="lead">Entrada para</p>
                 <h2 class="display-6">{{ validation_data.persona.NombreCompleto }}</h2>
-                {% if validation_data.persona.TipoPersona == "Adulto" and validation_data.persona.CantidadAcompanantesRegistrados > 0 %}
-                    <p class="lead">Acompañantes registrados: {{ validation_data.persona.CantidadAcompanantesRegistrados }}</p>
-                {% endif %}
+                
                 <p class="lead">{{ validation_data.mensaje }}</p>
             </div>
         {% elif validation_status == "already_registered" %}
@@ -34,9 +32,7 @@
                 <h1 class="display-4 fw-bold">ACCESO YA REGISTRADO</h1>
                 <p class="lead">Este QR ya fue utilizado para ingresar a este evento.</p>
                 <h2 class="display-6">{{ validation_data.persona.NombreCompleto }}</h2>
-                {% if validation_data.persona.TipoPersona == "Adulto" and validation_data.persona.CantidadAcompanantesRegistrados > 0 %}
-                    <p class="lead">Acompañantes registrados: {{ validation_data.persona.CantidadAcompanantesRegistrados }}</p>
-                {% endif %}
+                
             </div>
         {% elif validation_status == "error" %}
             <div class="status-page error">
