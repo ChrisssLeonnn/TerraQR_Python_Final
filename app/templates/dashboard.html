@@ -62,55 +62,100 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
     document.addEventListener("DOMContentLoaded", function() {
-        fetch('/api/dashboard/stats')
-            .then(response => response.json())
-            .then(data => {
-                // Actualizar tarjetas
-                document.getElementById('total-registrations').innerText = data.total_registrations;
-                document.getElementById('total-attendance').innerText = data.total_attendance;
+        // Guardar instancias de las gráficas para poder actualizarlas
+        let registrationsChart, attendanceChart, attendanceOverTimeChart;
 
-                // Gráfica de Registros por Tipo
-                new Chart(document.getElementById('registrations-by-type-chart'), {
-                    type: 'doughnut',
-                    data: {
-                        labels: Object.keys(data.registrations_by_type),
-                        datasets: [{
-                            label: 'Registros',
-                            data: Object.values(data.registrations_by_type),
-                            backgroundColor: ['#007bff', '#28a745', '#ffc107'],
-                        }]
+        function updateDashboard() {
+            fetch('/api/dashboard/stats')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('La respuesta de la red no fue exitosa');
                     }
-                });
+                    return response.json();
+                })
+                .then(data => {
+                    // 1. Actualizar tarjetas de totales
+                    document.getElementById('total-registrations').innerText = data.total_registrations;
+                    document.getElementById('total-attendance').innerText = data.total_attendance;
 
-                // Gráfica de Asistencia por Tipo
-                new Chart(document.getElementById('attendance-by-type-chart'), {
-                    type: 'pie',
-                    data: {
-                        labels: Object.keys(data.attendance_by_type),
-                        datasets: [{
-                            label: 'Asistencia',
-                            data: Object.values(data.attendance_by_type),
-                            backgroundColor: ['#007bff', '#28a745', '#ffc107'],
-                        }]
+                    // 2. Actualizar o crear la gráfica de Registros por Tipo
+                    const regLabels = Object.keys(data.registrations_by_type);
+                    const regData = Object.values(data.registrations_by_type);
+                    if (registrationsChart) {
+                        registrationsChart.data.labels = regLabels;
+                        registrationsChart.data.datasets[0].data = regData;
+                        registrationsChart.update();
+                    } else {
+                        registrationsChart = new Chart(document.getElementById('registrations-by-type-chart'), {
+                            type: 'doughnut',
+                            data: {
+                                labels: regLabels,
+                                datasets: [{
+                                    label: 'Registros',
+                                    data: regData,
+                                    backgroundColor: ['#007bff', '#28a745', '#ffc107', '#dc3545', '#6c757d'],
+                                }]
+                            }
+                        });
                     }
-                });
 
-                // Gráfica de Asistencia en el Tiempo
-                new Chart(document.getElementById('attendance-over-time-chart'), {
-                    type: 'line',
-                    data: {
-                        labels: Object.keys(data.attendance_over_time),
-                        datasets: [{
-                            label: 'Asistentes',
-                            data: Object.values(data.attendance_over_time),
-                            borderColor: '#dc3545',
-                            fill: false,
-                            tension: 0.1
-                        }]
+                    // 3. Actualizar o crear la gráfica de Asistencia por Tipo
+                    const attLabels = Object.keys(data.attendance_by_type);
+                    const attData = Object.values(data.attendance_by_type);
+                    if (attendanceChart) {
+                        attendanceChart.data.labels = attLabels;
+                        attendanceChart.data.datasets[0].data = attData;
+                        attendanceChart.update();
+                    } else {
+                        attendanceChart = new Chart(document.getElementById('attendance-by-type-chart'), {
+                            type: 'pie',
+                            data: {
+                                labels: attLabels,
+                                datasets: [{
+                                    label: 'Asistencia',
+                                    data: attData,
+                                    backgroundColor: ['#007bff', '#28a745', '#ffc107', '#dc3545', '#6c757d'],
+                                }]
+                            }
+                        });
                     }
+
+                    // 4. Actualizar o crear la gráfica de Asistencia en el Tiempo
+                    const timeLabels = Object.keys(data.attendance_over_time);
+                    const timeData = Object.values(data.attendance_over_time);
+                    if (attendanceOverTimeChart) {
+                        attendanceOverTimeChart.data.labels = timeLabels;
+                        attendanceOverTimeChart.data.datasets[0].data = timeData;
+                        attendanceOverTimeChart.update();
+                    } else {
+                        attendanceOverTimeChart = new Chart(document.getElementById('attendance-over-time-chart'), {
+                            type: 'line',
+                            data: {
+                                labels: timeLabels,
+                                datasets: [{
+                                    label: 'Asistentes',
+                                    data: timeData,
+                                    borderColor: '#dc3545',
+                                    fill: false,
+                                    tension: 0.1
+                                }]
+                            }
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error al obtener los datos del dashboard:', error);
+                    // Opcional: mostrar un error en la UI
+                    document.getElementById('total-registrations').innerText = 'Error';
+                    document.getElementById('total-attendance').innerText = 'Error';
                 });
-            })
-            .catch(error => console.error('Error fetching dashboard data:', error));
+        }
+
+        // Llamada inicial para cargar los datos inmediatamente
+        updateDashboard();
+        
+        // Actualizar el dashboard cada 5 segundos
+        setInterval(updateDashboard, 5000);
     });
 </script>
 {% endblock %}
