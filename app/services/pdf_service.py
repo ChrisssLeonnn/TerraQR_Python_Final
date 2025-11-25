@@ -55,5 +55,6 @@ def generate_qr_pdf(persona: models.Persona, qr_url: str) -> str:
     pdf.set_font("DejaVu", "I", 8)
     pdf.cell(200, 10, "Presenta este código QR en el acceso del evento.", ln=True, align="C")
 
-    # Return the PDF content as bytes
-    return pdf.output()
+    # Return the PDF content as a bytes object, which is what the Response class expects.
+    # pdf.output() returns a bytearray, which we convert to bytes.
+    return bytes(pdf.output())
