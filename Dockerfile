@@ -3,10 +3,29 @@ FROM python:3.11-slim-bullseye
 
 # Configura DEBIAN_FRONTEND para instalaciones no interactivas
 ENV DEBIAN_FRONTEND=noninteractive
-# Instala dependencias del sistema
+# Acepta la licencia de msodbcsql18 de forma no interactiva
+ENV ACCEPT_EULA=Y
+
+# Instala dependencias del sistema para aioodbc y SQL Server ODBC Driver
+# Basado en la documentación de Microsoft para Debian/Ubuntu
 RUN apt-get update && apt-get install -y --no-install-recommends \
+    gnupg \
+    unixodbc-dev \
     curl \
     fonts-dejavu \
+    && rm -rf /var/lib/apt/lists/*
+
+# Importa la clave GPG de Microsoft
+RUN curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add -
+
+# Añade el repositorio de Microsoft para SQL Server
+RUN curl https://packages.microsoft.com/config/debian/11/prod.list > /etc/apt/sources.list.d/mssql-release.list
+
+# Actualiza e instala el driver ODBC 18 para SQL Server
+# Auto-acepta la licencia de msodbcsql18
+RUN apt-get update && ACCEPT_EULA=Y apt-get install -y --no-install-recommends \
+    msodbcsql18 \
+    # mssql-tools18 # Opcional: si necesitas herramientas como sqlcmd
     && rm -rf /var/lib/apt/lists/*
 
 # Configura el entorno
