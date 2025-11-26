@@ -1,7 +1,7 @@
 fastapi
 uvicorn
 sqlalchemy[asyncio]
-aioodbc
+asyncpg
 pydantic
 pydantic[email]
 jinja2

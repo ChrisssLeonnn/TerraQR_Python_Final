@@ -8,19 +8,18 @@ from sqlalchemy import (
     ForeignKey,
     VARBINARY,
     Boolean,
-    Integer, # Added Integer for CantidadAcompanantes
+    Integer, 
+    UUID,
 )
 from sqlalchemy.orm import declarative_base, relationship
-from sqlalchemy.dialects.mssql import UNIQUEIDENTIFIER
 
 Base = declarative_base()
 
 class Persona(Base):
     __tablename__ = 'Persona'
-    __table_args__ = {'schema': 'terraqr'}
 
-    PersonaId = Column(UNIQUEIDENTIFIER, primary_key=True, default=uuid.uuid4)
-    QRToken = Column(UNIQUEIDENTIFIER, unique=True, nullable=False, default=uuid.uuid4)
+    PersonaId = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    QRToken = Column(UUID(as_uuid=True), unique=True, nullable=False, default=uuid.uuid4)
     Nombre = Column(String(150), nullable=False)
     ApellidoPaterno = Column(String(100), nullable=False)
     ApellidoMaterno = Column(String(100), nullable=False)
@@ -37,9 +36,8 @@ class Persona(Base):
 
 class Operador(Base):
     __tablename__ = 'Operador'
-    __table_args__ = {'schema': 'terraqr'}
 
-    OperadorId = Column(UNIQUEIDENTIFIER, primary_key=True, default=uuid.uuid4)
+    OperadorId = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     Nombre = Column(String(150), nullable=False)
     Usuario = Column(String(100), unique=True, nullable=False)
     ContrasenaHash = Column(String(255), nullable=False)
@@ -48,9 +46,8 @@ class Operador(Base):
 
 class Evento(Base):
     __tablename__ = 'Evento'
-    __table_args__ = {'schema': 'terraqr'}
 
-    EventoId = Column(UNIQUEIDENTIFIER, primary_key=True, default=uuid.uuid4)
+    EventoId = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     EventoKey = Column(String(50), unique=True, nullable=False)
     NombreEvento = Column(String(200), nullable=False)
     Fecha = Column(DateTime, nullable=False)
@@ -59,11 +56,10 @@ class Evento(Base):
 
 class Asistencia(Base):
     __tablename__ = 'Asistencia'
-    __table_args__ = {'schema': 'terraqr'}
 
-    AsistenciaId = Column(UNIQUEIDENTIFIER, primary_key=True, default=uuid.uuid4)
-    PersonaId = Column(UNIQUEIDENTIFIER, ForeignKey('terraqr.Persona.PersonaId'), nullable=False)
-    EventoId = Column(UNIQUEIDENTIFIER, ForeignKey('terraqr.Evento.EventoId'), nullable=False)
+    AsistenciaId = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    PersonaId = Column(UUID(as_uuid=True), ForeignKey('Persona.PersonaId'), nullable=False)
+    EventoId = Column(UUID(as_uuid=True), ForeignKey('Evento.EventoId'), nullable=False)
     FechaCheckIn = Column(DateTime, nullable=False, default=datetime.utcnow)
 
     persona = relationship("Persona", back_populates="asistencias")
