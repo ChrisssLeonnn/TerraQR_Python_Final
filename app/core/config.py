@@ -31,7 +31,7 @@ class Settings(BaseSettings):
         # Construct DATABASE_URL after all other DB settings are loaded
         self.DATABASE_URL = (
             f"mssql+aioodbc://{self.DB_USER}:{self.DB_PASSWORD}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
-            f"?driver=ODBC+Driver+18+for+SQL Server&TrustServerCertificate=yes&timeout=15"
+            f"?driver=ODBC+Driver+18+for+SQL Server&TrustServerCertificate=yes&Encrypt=no"
         )
 
 @lru_cache()
